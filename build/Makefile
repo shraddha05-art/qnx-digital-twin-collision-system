@@ -1,48 +1,41 @@
 # =============================================================================
 # Makefile — Digital Twin Forward Collision Warning System
 # =============================================================================
-# Targets:
-#   make           — build with ncurses dashboard (default)
-#   make plain     — build with plain printf dashboard (no ncurses needed)
-#   make run       — build (ncurses) and run
-#   make run-plain — build (plain) and run
-#   make clean     — remove all build artefacts
+# Usage:
+#   make            — build
+#   make run        — build and run simulation
+#   make demo       — build and run judge demo
+#   make test       — build and run integration test
+#   make clean      — remove build artefacts
 #
-# QNX cross-compilation:
-#   Replace CC=gcc with CC=qcc and add -Vgcc_ntoaarch64le to CFLAGS.
+# QNX cross-compile: replace CC=gcc with CC=qcc, add -Vgcc_ntoaarch64le
 # =============================================================================
 
 CC       = gcc
 CFLAGS   = -Wall -Wextra -std=c11 -D_POSIX_C_SOURCE=200809L -I./include
-LDFLAGS  = -lm -lncurses
+LDFLAGS  = -lm
 
 TARGET   = fcw_sim
 SRCDIR   = src
 BUILDDIR = build
 
-SOURCES  = $(SRCDIR)/main.c                   \
-           $(SRCDIR)/sensor_process.c         \
-           $(SRCDIR)/digital_twin_process.c   \
-           $(SRCDIR)/prediction_engine.c      \
-           $(SRCDIR)/warning_system.c         \
+SOURCES  = $(SRCDIR)/main.c                  \
+           $(SRCDIR)/sensor_process.c        \
+           $(SRCDIR)/digital_twin_process.c  \
+           $(SRCDIR)/prediction_engine.c     \
+           $(SRCDIR)/warning_system.c        \
            $(SRCDIR)/dash_proc.c
 
 OBJECTS  = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
 
-# ── Default: ncurses dashboard ────────────────────────────────────────────────
 all: $(BUILDDIR)/$(TARGET)
 
 $(BUILDDIR)/$(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
-	@echo "Build OK (ncurses) -> $(BUILDDIR)/$(TARGET)"
+	@echo "Build OK -> $(BUILDDIR)/$(TARGET)"
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-# ── Plain printf dashboard (no ncurses required) ──────────────────────────────
-plain: $(BUILDDIR)
-	$(CC) $(CFLAGS) -DPLAIN_DASH $(SOURCES) -o $(BUILDDIR)/$(TARGET) -lm
-	@echo "Build OK (plain) -> $(BUILDDIR)/$(TARGET)"
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -50,11 +43,14 @@ $(BUILDDIR):
 run: all
 	./$(BUILDDIR)/$(TARGET)
 
-run-plain: plain
-	./$(BUILDDIR)/$(TARGET)
+demo: all
+	./$(BUILDDIR)/$(TARGET) --demo
+
+test: all
+	./$(BUILDDIR)/$(TARGET) --test
 
 clean:
 	rm -rf $(BUILDDIR)/*.o $(BUILDDIR)/$(TARGET)
 	@echo "Cleaned."
 
-.PHONY: all plain run run-plain clean
+.PHONY: all run demo test clean

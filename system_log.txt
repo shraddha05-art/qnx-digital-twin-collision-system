@@ -1,0 +1,26 @@
+# ── Simulation started 10:15:29 ──
+# Time     | Distance  |    Speed  | Predicted | Risk
+10:15:30 |   87.50 m |  72.0 km/h |   62.50 m | SAFE
+10:15:30 |   75.00 m |  72.0 km/h |   50.00 m | WARNING
+10:15:31 |   62.50 m |  72.0 km/h |   37.50 m | WARNING
+10:15:31 |   50.00 m |  70.2 km/h |   25.50 m | WARNING
+10:15:32 |   37.75 m |  68.4 km/h |   13.75 m | WARNING
+10:15:32 |   25.75 m |  66.6 km/h |    2.25 m | CRITICAL
+10:15:33 |   14.00 m |  64.8 km/h |    0.00 m | CRITICAL
+10:15:33 |    2.50 m |  63.0 km/h |    0.00 m | CRITICAL
+10:15:34 |    0.00 m |  61.2 km/h |    0.00 m | CRITICAL
+# ── Simulation ended 10:15:34 ──
+
+# ── Simulation started 10:31:27 ──
+# Time     | Distance  |    Speed  | Predicted | Risk
+10:31:27 |   87.50 m |  72.0 km/h |    0.00 m | SAFE
+10:31:27 |   75.00 m |  72.0 km/h |    0.00 m | WARNING
+10:31:28 |   62.50 m |  72.0 km/h |    0.00 m | WARNING
+10:31:28 |   50.00 m |  70.2 km/h |    0.00 m | WARNING
+10:31:29 |   37.75 m |  68.4 km/h |    0.00 m | WARNING
+10:31:29 |   25.75 m |  66.6 km/h |    0.00 m | CRITICAL
+10:31:30 |   14.00 m |  64.8 km/h |    0.00 m | CRITICAL
+10:31:31 |    2.50 m |  63.0 km/h |    0.00 m | CRITICAL
+10:31:31 |    0.00 m |  61.2 km/h |    0.00 m | CRITICAL
+# ── Simulation ended 10:31:32 ──
+
