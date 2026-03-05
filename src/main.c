@@ -27,32 +27,25 @@ void twin_init(fcw_state_t *state);
 void twin_update(fcw_state_t *state);
 
 void prediction_compute_ttc(fcw_state_t *state);
-
 void warning_evaluate(const fcw_state_t *state);
+
+void dashboard_init(void);
+int  dashboard_update(const fcw_state_t *state);
+void dashboard_shutdown(void);
 
 int main(void)
 {
-    fcw_state_t state;   /* Shared state â€” the "shared memory region" */
+    fcw_state_t state;
     int step;
-
-    printf("=================================================================\n");
-    printf("  Digital Twin Forward Collision Warning System â€” Simulation\n");
-    printf("  Vehicle: %.0f m/s  |  Obstacle: %.0f m/s approaching\n",
-           INITIAL_SPEED_MPS, OBSTACLE_SPEED_MPS);
-    printf("  Initial distance: %.0f m  |  Steps: %d  |  dt: %.1f s\n",
-           INITIAL_DISTANCE_M, SIM_STEPS, SIM_STEP_TIME_S);
-    printf("=================================================================\n\n");
+    int quit = 0;
 
     /* â”€â”€ Initialise all modules â”€â”€ */
     sensor_init(&state);
     twin_init(&state);
-    printf("\n");
+    dashboard_init();        /* Opens ncurses screen (or plain header)  */
 
     /* â”€â”€ Main simulation loop â”€â”€ */
-    for (step = 0; step < SIM_STEPS; step++) {
-
-        printf("----- Simulation Step %2d ----------------------------------------\n",
-               step + 1);
+    for (step = 0; step < SIM_STEPS && !quit; step++) {
 
         /* 1. Sensor process â€” read/simulate physical sensor data */
         sensor_update(&state);
@@ -66,14 +59,14 @@ int main(void)
         /* 4. Warning system â€” emit appropriate alert output */
         warning_evaluate(&state);
 
-        printf("\n");
+        /* 5. Dashboard â€” refresh display (lowest priority, 500 ms) */
+        quit = dashboard_update(&state);
 
         /* Stop simulation if obstacle reached */
-        if (state.distance <= 0.0f) {
-            printf(">>> SIMULATION ENDED: Vehicle has reached the obstacle. <<<\n");
-            break;
-        }
+        if (state.distance <= 0.0f) break;
     }
+
+    dashboard_shutdown();
 
     printf("=================================================================\n");
     printf("  Simulation complete.\n");

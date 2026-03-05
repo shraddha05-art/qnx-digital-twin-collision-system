@@ -1,58 +1,60 @@
 # =============================================================================
 # Makefile — Digital Twin Forward Collision Warning System
 # =============================================================================
-# Usage:
-#   make          — build the fcw_sim binary
-#   make run      — build and run the simulation
-#   make clean    — remove all build artefacts
+# Targets:
+#   make           — build with ncurses dashboard (default)
+#   make plain     — build with plain printf dashboard (no ncurses needed)
+#   make run       — build (ncurses) and run
+#   make run-plain — build (plain) and run
+#   make clean     — remove all build artefacts
 #
-# QNX cross-compilation note:
-#   Replace CC with qcc and add -Vgcc_ntoaarch64le for Raspberry Pi 4 target.
-#   All source files and logic are identical on QNX — only the compiler changes.
+# QNX cross-compilation:
+#   Replace CC=gcc with CC=qcc and add -Vgcc_ntoaarch64le to CFLAGS.
 # =============================================================================
 
-CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c11 -I./include
-LDFLAGS = -lm
+CC       = gcc
+CFLAGS   = -Wall -Wextra -std=c11 -D_POSIX_C_SOURCE=200809L -I./include
+LDFLAGS  = -lm -lncurses
 
-TARGET  = fcw_sim
-SRCDIR  = src
-BUILDDIR= build
+TARGET   = fcw_sim
+SRCDIR   = src
+BUILDDIR = build
 
-# All source files in src/
-SOURCES = $(SRCDIR)/main.c              \
-          $(SRCDIR)/sensor_process.c    \
-          $(SRCDIR)/digital_twin_process.c \
-          $(SRCDIR)/prediction_engine.c \
-          $(SRCDIR)/warning_system.c
+SOURCES  = $(SRCDIR)/main.c                   \
+           $(SRCDIR)/sensor_process.c         \
+           $(SRCDIR)/digital_twin_process.c   \
+           $(SRCDIR)/prediction_engine.c      \
+           $(SRCDIR)/warning_system.c         \
+           $(SRCDIR)/dash_proc.c
 
-OBJECTS = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
+OBJECTS  = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
 
-# ── Default target ────────────────────────────────────────────────────────────
+# ── Default: ncurses dashboard ────────────────────────────────────────────────
 all: $(BUILDDIR)/$(TARGET)
 
-# ── Link ──────────────────────────────────────────────────────────────────────
 $(BUILDDIR)/$(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
-	@echo ""
-	@echo "Build successful → $(BUILDDIR)/$(TARGET)"
+	@echo "Build OK (ncurses) -> $(BUILDDIR)/$(TARGET)"
 
-# ── Compile each .c to .o ─────────────────────────────────────────────────────
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# ── Create build directory if missing ─────────────────────────────────────────
+# ── Plain printf dashboard (no ncurses required) ──────────────────────────────
+plain: $(BUILDDIR)
+	$(CC) $(CFLAGS) -DPLAIN_DASH $(SOURCES) -o $(BUILDDIR)/$(TARGET) -lm
+	@echo "Build OK (plain) -> $(BUILDDIR)/$(TARGET)"
+
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
-# ── Run the simulation ────────────────────────────────────────────────────────
 run: all
-	@echo ""
 	./$(BUILDDIR)/$(TARGET)
 
-# ── Remove build artefacts ────────────────────────────────────────────────────
+run-plain: plain
+	./$(BUILDDIR)/$(TARGET)
+
 clean:
 	rm -rf $(BUILDDIR)/*.o $(BUILDDIR)/$(TARGET)
-	@echo "Cleaned build directory."
+	@echo "Cleaned."
 
-.PHONY: all run clean
+.PHONY: all plain run run-plain clean
