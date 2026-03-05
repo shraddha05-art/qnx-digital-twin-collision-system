@@ -27,25 +27,41 @@
  *   alert_proc whenever warning_flag changes value.
  */
 
+/*
+ * prediction_engine.c
+ * -------------------
+ * MODULE 3 — Prediction Engine
+ *
+ * Implements the Time-To-Collision (TTC) algorithm.
+ * Computes TTC from current distance and relative speed,
+ * then classifies the alert level.
+ *
+ * TTC Formula:   TTC = distance / relative_speed
+ *
+ * Alert Logic:
+ *   TTC > 3.0 s              → ALERT_SAFE
+ *   1.5 s < TTC <= 3.0 s    → ALERT_WARNING
+ *   TTC <= 1.5 s             → ALERT_CRITICAL
+ *
+ * QNX Parallel:
+ *   Runs inside twin_proc as analysis_thread at priority 23 (SCHED_FIFO).
+ */
+
 #include <stdio.h>
 #include "fcw_types.h"
 
 /*
  * prediction_compute_ttc
  * ----------------------
- * Computes Time-To-Collision and classifies the current alert level.
- * Updates state->ttc and state->warning_flag.
- *
- * Parameters:
- *   state â€” pointer to the shared fcw_state_t structure
+ * Computes TTC and writes warning_flag into shared state.
  */
 void prediction_compute_ttc(fcw_state_t *state)
 {
-    /* Guard: if vehicles are not closing, no collision risk */
+    /* Guard: vehicles not closing */
     if (state->relative_speed <= 0.0f) {
-        state->ttc          = 9999.0f;   /* Effectively infinite            */
+        state->ttc          = 9999.0f;
         state->warning_flag = ALERT_SAFE;
-        printf("[PREDICT] Step %2d | Vehicles not closing â€” TTC=inf  [SAFE]\n",
+        printf("[PREDICT] Step %2d | Vehicles not closing — TTC=inf  [SAFE]\n",
                state->step);
         return;
     }
@@ -54,28 +70,27 @@ void prediction_compute_ttc(fcw_state_t *state)
     if (state->distance <= 0.0f) {
         state->ttc          = 0.0f;
         state->warning_flag = ALERT_CRITICAL;
-        printf("[PREDICT] Step %2d | Distance=0 â€” COLLISION  [CRITICAL]\n",
+        printf("[PREDICT] Step %2d | Distance=0 — COLLISION  [CRITICAL]\n",
                state->step);
         return;
     }
 
-    /* Core TTC calculation */
+    /* Core TTC */
     state->ttc = state->distance / state->relative_speed;
 
-    /* Classify alert level based on TTC thresholds */
     if (state->ttc > TTC_WARNING_THRESHOLD) {
         state->warning_flag = ALERT_SAFE;
-        printf("[PREDICT] Step %2d | TTC=%5.2f s  â†’  [SAFE]\n",
+        printf("[PREDICT] Step %2d | TTC=%5.2f s  →  [SAFE]\n",
                state->step, state->ttc);
     }
     else if (state->ttc > TTC_CRITICAL_THRESHOLD) {
         state->warning_flag = ALERT_WARNING;
-        printf("[PREDICT] Step %2d | TTC=%5.2f s  â†’  [WARNING]\n",
+        printf("[PREDICT] Step %2d | TTC=%5.2f s  →  [WARNING]\n",
                state->step, state->ttc);
     }
     else {
         state->warning_flag = ALERT_CRITICAL;
-        printf("[PREDICT] Step %2d | TTC=%5.2f s  â†’  [CRITICAL]\n",
+        printf("[PREDICT] Step %2d | TTC=%5.2f s  →  [CRITICAL]\n",
                state->step, state->ttc);
     }
 }
