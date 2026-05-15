@@ -163,8 +163,10 @@ make -f build/Makefile test
 
 ---
 
-TEAM 
-Shraddha Pratap Khanapurkar
-Snehal Hazare
-S.Koushik
+TEAM :
+Shraddha Pratap Khanapurkar|
+Snehal Hazare|
+S.Koushik|
+
+
 *QNX Q-eHACK Hackathon Submission*
