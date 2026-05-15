@@ -153,15 +153,6 @@ make -f build/Makefile test
 
 ---
 
-## Team
-
-| Member   | Role                                              |
-|----------|---------------------------------------------------|
-| Member A | QNX Lead — processes, IPC, scheduling             |
-| Member B | Algorithm Lead — TTC engine, prediction, twin     |
-| Member C | Hardware & Dashboard — sensor, display, logging   |
-
----
 
 TEAM :
 Shraddha Pratap Khanapurkar|
